@@ -1,0 +1,16 @@
+:root {
+  --pink: #d81b7a;
+  --green: #7cb342;
+  --navy: #1b3b5c;
+  --cream: #fdf3ec;
+  --ink: #22303f;
+  --line: #e8ddd2;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+}
+input, select, textarea, button { font-family: inherit; }
