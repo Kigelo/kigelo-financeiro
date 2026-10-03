@@ -18,6 +18,7 @@ export default function NovaEntradaPage() {
   const [operator, setOperator] = useState(OPERATORS[0]);
   const [installments, setInstallments] = useState('1x');
   const [observation, setObservation] = useState('');
+  const [file, setFile] = useState<File | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<number | null>(null);
@@ -47,6 +48,12 @@ export default function NovaEntradaPage() {
           transaction_date: today,
         }),
       });
+      if (file) {
+        const form = new FormData();
+        form.append('file', file);
+        form.append('transaction_id', String(res.id));
+        await fetch('/api/documents', { method: 'POST', body: form, credentials: 'include' });
+      }
       setConfirming(false);
       setSuccess(res.id);
     } catch (err: any) {
@@ -101,6 +108,9 @@ export default function NovaEntradaPage() {
             </select>
           </Field>
         )}
+        <Field label="Anexar documento (PDF/JPG/PNG)">
+          <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFile(e.target.files?.[0] || null)} style={input()} />
+        </Field>
         <Field label="Observação (opcional)"><textarea rows={2} value={observation} onChange={e => setObservation(e.target.value)} style={input()} /></Field>
         <button type="submit" style={btn()}>REGISTRAR ENTRADA</button>
         {error && <div style={{ color: '#c62828', fontSize: 13, marginTop: 8 }}>{error}</div>}
@@ -135,3 +145,4 @@ function btn(bg = '#d81b7a', color = '#fff', ghost = false): React.CSSProperties
 }
 function overlay(): React.CSSProperties { return { position: 'fixed', inset: 0, background: 'rgba(20,20,20,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }; }
 function modal(): React.CSSProperties { return { background: '#fff', borderRadius: 16, padding: 20, maxWidth: 420, width: '100%' }; }
+
