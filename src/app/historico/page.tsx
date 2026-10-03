@@ -126,7 +126,7 @@ export default function HistoricoPage() {
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {docs.map(d => (
                   <li key={d.id} style={{ padding: '8px 0', borderTop: `1px solid ${COLORS.line}` }}>
-                    <a href={d.file_url} target="_blank" rel="noopener noreferrer" style={{ color: '#d81b7a', fontWeight: 600, textDecoration: 'none' }}>
+                    <a href={`/api/documents/${d.id}/arquivo`} target="_blank" rel="noopener noreferrer" style={{ color: '#d81b7a', fontWeight: 600, textDecoration: 'none' }}>
                       📎 {d.file_name}
                     </a>
                   </li>
