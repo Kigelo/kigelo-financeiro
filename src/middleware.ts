@@ -1,37 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
 
-const secret = new TextEncoder().encode(process.env.AUTH_SECRET!);
-
-// Rotas de página que exigem ADMIN. Isso complementa (não substitui) o
-// requireRole('ADMIN') dentro de cada API — mesmo que alguém digite a URL
-// diretamente no navegador, o middleware barra antes de a página carregar.
-const ADMIN_PATHS = [
+// Esta camada roda num ambiente restrito da Vercel (Edge) e serve só para
+// redirecionar rapidamente quem não tem cookie de sessão nenhum — é uma
+// conveniência de navegação, não a barreira de segurança real.
+//
+// A barreira de segurança real está em cada rota de API (src/app/api/**),
+// que chama requireRole() no servidor (ambiente Node, não Edge) antes de
+// ler ou gravar qualquer dado. Mesmo que alguém digite a URL de uma página
+// administrativa diretamente, nenhuma chamada a dados sensíveis é atendida
+// sem a verificação completa e correta da sessão acontecer ali.
+const PROTECTED_PATHS = [
+  '/dashboard', '/nova-entrada', '/nova-saida', '/novo-custo', '/historico',
   '/usuarios', '/categorias', '/formas-pagamento', '/operadoras',
-  '/auditoria', '/fechamento', '/relatorio-semanal', '/relatorio-mensal',
+  '/auditoria', '/fechamento', '/relatorio-diario', '/relatorio-semanal', '/relatorio-mensal',
 ];
 
-export async function middleware(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  const isProtectedPage = pathname.startsWith('/dashboard') || ADMIN_PATHS.some(p => pathname.startsWith(p));
+  const isProtectedPage = PROTECTED_PATHS.some(p => pathname.startsWith(p));
   if (!isProtectedPage) return NextResponse.next();
 
-  const token = req.cookies.get('kigelo_session')?.value;
-  if (!token) return NextResponse.redirect(new URL('/login', req.url));
+  const hasCookie = req.cookies.has('kigelo_session');
+  if (!hasCookie) return NextResponse.redirect(new URL('/login', req.url));
 
-  try {
-    const { payload } = await jwtVerify(token, secret);
-    const role = (payload as any).role;
-    if (ADMIN_PATHS.some(p => pathname.startsWith(p)) && role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
-    }
-    return NextResponse.next();
-  } catch {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/usuarios/:path*', '/categorias/:path*', '/formas-pagamento/:path*', '/operadoras/:path*', '/auditoria/:path*', '/fechamento/:path*', '/relatorio-semanal/:path*', '/relatorio-mensal/:path*'],
+  matcher: [
+    '/dashboard/:path*', '/nova-entrada/:path*', '/nova-saida/:path*', '/novo-custo/:path*', '/historico/:path*',
+    '/usuarios/:path*', '/categorias/:path*', '/formas-pagamento/:path*', '/operadoras/:path*',
+    '/auditoria/:path*', '/fechamento/:path*', '/relatorio-diario/:path*', '/relatorio-semanal/:path*', '/relatorio-mensal/:path*',
+  ],
 };
