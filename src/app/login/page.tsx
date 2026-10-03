@@ -1,10 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +14,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await apiFetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-      router.push('/dashboard');
+      // Recarregamento completo (não navegação do lado do cliente): garante que o
+      // cookie recém-criado seja lido do zero pelo navegador antes de ir pro painel.
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.message);
     } finally {
