@@ -19,6 +19,7 @@ export default function NovaSaidaPage() {
   const [operator, setOperator] = useState(OPERATORS[0]);
   const [installments, setInstallments] = useState('1x');
   const [observation, setObservation] = useState('');
+  const [file, setFile] = useState<File | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<number | null>(null);
@@ -54,6 +55,12 @@ export default function NovaSaidaPage() {
           description, observation, transaction_date: today,
         }),
       });
+      if (file) {
+        const form = new FormData();
+        form.append('file', file);
+        form.append('transaction_id', String(res.id));
+        await fetch('/api/documents', { method: 'POST', body: form, credentials: 'include' });
+      }
       setConfirming(false);
       setSuccess(res.id);
     } catch (err: any) {
@@ -109,6 +116,9 @@ export default function NovaSaidaPage() {
               <select value={installments} onChange={e => setInstallments(e.target.value)} style={input()}>{Array.from({ length: 12 }, (_, i) => `${i + 1}x`).map(p => <option key={p}>{p}</option>)}</select>
             </Field>
           )}
+          <Field label="Anexar documento (PDF/JPG/PNG)">
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFile(e.target.files?.[0] || null)} style={input()} />
+          </Field>
           <Field label="Observação (opcional)"><textarea rows={2} value={observation} onChange={e => setObservation(e.target.value)} style={input()} /></Field>
           <button type="submit" style={{ ...btn(), width: '100%' }}>REGISTRAR SAÍDA</button>
           {error && <div style={{ color: '#c62828', fontSize: 13, marginTop: 8 }}>{error}</div>}
