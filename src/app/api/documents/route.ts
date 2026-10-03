@@ -33,7 +33,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Você não pode anexar documentos a este lançamento.' }, { status: 403 });
     }
 
-    const blob = await put(`notas/${transactionId}-${Date.now()}-${file.name}`, file, { access: 'public' });
+    // O Blob Store do projeto está configurado como privado (mais seguro para
+    // comprovantes financeiros): o arquivo não tem uma URL pública direta.
+    // Para visualizar, o front-end passa pela rota /api/documents/[id]/arquivo,
+    // que confere a sessão e busca o conteúdo usando o token de servidor.
+    const blob = await put(`notas/${transactionId}-${Date.now()}-${file.name}`, file, { access: 'private' });
 
     const rows = await query(
       `INSERT INTO documents (transaction_id, file_url, file_name, file_type, uploaded_by)
@@ -69,3 +73,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Erro ao buscar documentos.' }, { status: 500 });
   }
 }
+
