@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { get } from '@vercel/blob';
 import { query } from '@/lib/db';
 import { requireRole, AuthError } from '@/lib/auth';
 
 // Serve o conteúdo de um comprovante privado do Vercel Blob.
-// A URL salva no banco não é pública: só é lida com sucesso se a requisição
-// enviar o token de servidor (BLOB_READ_WRITE_TOKEN), que nunca é exposto
-// ao navegador. Por isso essa rota existe — ela faz essa busca autenticada
-// no lugar do navegador e devolve o arquivo só depois de confirmar que o
-// usuário logado tem permissão para ver esse lançamento específico.
+// Um blob privado não tem URL acessível direto pelo navegador: só o servidor,
+// usando o token (BLOB_READ_WRITE_TOKEN), consegue buscá-lo via get(). Por
+// isso essa rota existe — ela faz essa busca autenticada no lugar do
+// navegador e devolve o arquivo só depois de confirmar que o usuário logado
+// tem permissão para ver esse lançamento específico.
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await requireRole('ANY');
@@ -25,17 +26,17 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Acesso negado.' }, { status: 403 });
     }
 
-    const blobRes = await fetch(doc.file_url, {
-      headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
-    });
-    if (!blobRes.ok) {
+    // doc.file_url guarda o "pathname" do blob (ex: notas/123-...-nome.pdf),
+    // não uma URL pública — get() é a forma correta de buscar esse conteúdo
+    // num store privado.
+    const result = await get(doc.file_url, { access: 'private' });
+    if (!result || result.statusCode !== 200 || !result.stream) {
       return NextResponse.json({ error: 'Não foi possível carregar o arquivo no momento.' }, { status: 502 });
     }
 
-    const buf = await blobRes.arrayBuffer();
-    return new NextResponse(buf, {
+    return new NextResponse(result.stream as any, {
       headers: {
-        'Content-Type': doc.file_type || 'application/octet-stream',
+        'Content-Type': doc.file_type || result.blob.contentType || 'application/octet-stream',
         'Content-Disposition': `inline; filename="${doc.file_name}"`,
       },
     });
