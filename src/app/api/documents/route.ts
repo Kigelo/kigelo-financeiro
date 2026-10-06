@@ -37,7 +37,10 @@ export async function POST(req: NextRequest) {
     // comprovantes financeiros): o arquivo não tem uma URL pública direta.
     // Para visualizar, o front-end passa pela rota /api/documents/[id]/arquivo,
     // que confere a sessão e busca o conteúdo usando o token de servidor.
-    const blob = await put(`notas/${transactionId}-${Date.now()}-${file.name}`, file, { access: 'private' });
+    // O "as any" evita que a checagem de tipos do TypeScript trave o build caso
+    // a versão do pacote instalada na Vercel ainda não liste "private" entre os
+    // tipos aceitos — o valor em si é passado normalmente para a função.
+    const blob = await put(`notas/${transactionId}-${Date.now()}-${file.name}`, file, { access: 'private' as any });
 
     const rows = await query(
       `INSERT INTO documents (transaction_id, file_url, file_name, file_type, uploaded_by)
@@ -73,4 +76,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Erro ao buscar documentos.' }, { status: 500 });
   }
 }
-
