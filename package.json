@@ -14,7 +14,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "pg": "8.12.0",
-    "@vercel/blob": "latest",
+    "@vercel/blob": "0.24.1",
     "bcryptjs": "2.4.3",
     "jose": "5.6.3",
     "zod": "3.23.8"
