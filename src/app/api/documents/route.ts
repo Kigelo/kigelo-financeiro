@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { put, type PutBlobResult } from '@vercel/blob';
 import { query } from '@/lib/db';
 import { requireRole, AuthError } from '@/lib/auth';
 
@@ -36,16 +36,16 @@ export async function POST(req: NextRequest) {
     // O Blob Store do projeto está configurado como privado (mais seguro para
     // comprovantes financeiros): o arquivo não tem uma URL pública direta.
     // Para visualizar, o front-end passa pela rota /api/documents/[id]/arquivo,
-    // que confere a sessão e busca o conteúdo usando o token de servidor.
-    // O "as any" evita que a checagem de tipos do TypeScript trave o build caso
-    // a versão do pacote instalada na Vercel ainda não liste "private" entre os
-    // tipos aceitos — o valor em si é passado normalmente para a função.
-    const blob = await put(`notas/${transactionId}-${Date.now()}-${file.name}`, file, { access: 'private' as any });
+    // que confere a sessão e busca o conteúdo pelo "pathname" usando get().
+    const pathname = `notas/${transactionId}-${Date.now()}-${file.name}`;
+    const blob: PutBlobResult = await put(pathname, file, { access: 'private' });
 
+    // Guardamos o pathname (não a URL completa): é o que a função get() do
+    // SDK espera para buscar um blob de um store privado.
     const rows = await query(
       `INSERT INTO documents (transaction_id, file_url, file_name, file_type, uploaded_by)
        VALUES ($1,$2,$3,$4,$5) RETURNING id`,
-      [Number(transactionId), blob.url, file.name, file.type, user.id]
+      [Number(transactionId), pathname, file.name, file.type, user.id]
     );
     await query('INSERT INTO audit_logs (user_id, action, transaction_id, details) VALUES ($1,$2,$3,$4)', [user.id, 'Upload de documento', Number(transactionId), file.name]);
 
@@ -76,3 +76,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Erro ao buscar documentos.' }, { status: 500 });
   }
 }
+
