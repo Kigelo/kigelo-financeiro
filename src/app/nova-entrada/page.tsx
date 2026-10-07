@@ -43,7 +43,7 @@ export default function NovaEntradaPage() {
           amount: val,
           payment_method: pm,
           operator: pm === 'Débito' || pm === 'Crédito' ? operator : null,
-          installments: pm === 'Crédito' ? installments : null,
+          installments: pm === 'Crédito' ? parseInt(installments) : null,
           description,
           observation,
           transaction_date: today,
