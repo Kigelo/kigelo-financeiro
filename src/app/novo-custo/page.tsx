@@ -54,7 +54,7 @@ export default function NovoCustoPage() {
         body: JSON.stringify({
           type: 'CUSTO', amount: val, payment_method: pm, category, supplier, invoice_number: invoice,
           operator: pm === 'Débito' || pm === 'Crédito' ? operator : null,
-          installments: pm === 'Crédito' ? installments : null,
+          installments: pm === 'Crédito' ? parseInt(installments) : null,
           description, observation, transaction_date: today,
         }),
       });
