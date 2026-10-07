@@ -52,7 +52,7 @@ export default function NovaSaidaPage() {
         body: JSON.stringify({
           type: 'SAIDA', amount: val, payment_method: pm, category,
           operator: pm === 'Débito' || pm === 'Crédito' ? operator : null,
-          installments: pm === 'Crédito' ? installments : null,
+          installments: pm === 'Crédito' ? parseInt(installments) : null,
           description, observation, transaction_date: today,
         }),
       });
@@ -148,5 +148,7 @@ export default function NovaSaidaPage() {
       </div>
     </Shell>
   );
+}
+
 }
 
