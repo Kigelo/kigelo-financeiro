@@ -3,7 +3,7 @@ import { query, pool } from '@/lib/db';
 import { requireRole, AuthError } from '@/lib/auth';
 
 const VALID_TYPES = ['ENTRADA', 'SAIDA', 'CUSTO'];
-const VALID_PM = ['Dinheiro', 'PIX', 'Débito', 'Crédito', 'Boleto'];
+const VALID_PM = ['Dinheiro', 'PIX', 'Cartão', 'Boleto'];
 
 // POST /api/transactions — cria um lançamento. Uma vez criado, é IMUTÁVEL:
 // não existe rota PUT/PATCH/DELETE para transactions neste sistema por design.
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       const pmId = pm.rows[0]?.id;
 
       let operatorId: number | null = null;
-      if (body.payment_method === 'Débito' || body.payment_method === 'Crédito') {
+      if (body.payment_method === 'Cartão') {
         const op = await client.query('SELECT id FROM operators WHERE name=$1', [body.operator]);
         operatorId = op.rows[0]?.id ?? null;
       }
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
          RETURNING id, created_at`,
         [
           body.type, amount, pmId, operatorId,
-          body.payment_method === 'Crédito' ? body.installments : null,
+          body.payment_method === 'Cartão' ? body.installments : null,
           categoryId, body.supplier ?? null, body.invoice_number ?? null,
           body.description ?? null, body.observation ?? null,
           user.id, body.transaction_date,
@@ -133,4 +133,5 @@ export async function GET(req: NextRequest) {
 function bad(msg: string) {
   return NextResponse.json({ error: msg }, { status: 400 });
 }
+
 
