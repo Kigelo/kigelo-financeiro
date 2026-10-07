@@ -3,7 +3,7 @@ import { query, pool } from '@/lib/db';
 import { requireRole, AuthError } from '@/lib/auth';
 
 const VALID_TYPES = ['ENTRADA', 'SAIDA', 'CUSTO'];
-const VALID_PM = ['Dinheiro', 'PIX', 'Débito', 'Crédito'];
+const VALID_PM = ['Dinheiro', 'PIX', 'Débito', 'Crédito', 'Boleto'];
 
 // POST /api/transactions — cria um lançamento. Uma vez criado, é IMUTÁVEL:
 // não existe rota PUT/PATCH/DELETE para transactions neste sistema por design.
@@ -133,3 +133,4 @@ export async function GET(req: NextRequest) {
 function bad(msg: string) {
   return NextResponse.json({ error: msg }, { status: 400 });
 }
+
