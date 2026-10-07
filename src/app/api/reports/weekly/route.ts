@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
       return { date, entradas, saidas, custos, saldo: entradas - saidas - custos };
     });
 
-    const byPm = ['Dinheiro', 'PIX', 'Débito', 'Crédito'].map(pm => ({
+    const byPm = ['Dinheiro', 'PIX', 'Cartão', 'Boleto'].map(pm => ({
       pm, total: rows.filter(r => r.type === 'ENTRADA' && r.payment_method === pm).reduce((s, r) => s + Number(r.amount), 0),
     }));
 
