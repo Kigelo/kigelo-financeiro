@@ -25,7 +25,7 @@ export default function RelatorioDiarioPage() {
   const inTotal = entradas.reduce((s, t) => s + Number(t.amount), 0);
   const outTotal = items.filter(t => t.type === 'SAIDA').reduce((s, t) => s + Number(t.amount), 0);
   const costTotal = items.filter(t => t.type === 'CUSTO').reduce((s, t) => s + Number(t.amount), 0);
-  const byPm = ['Dinheiro', 'PIX', 'Débito', 'Crédito'].map(pm => ({ pm, total: entradas.filter(t => t.payment_method === pm).reduce((s, t) => s + Number(t.amount), 0) }));
+  const byPm = ['Dinheiro', 'PIX', 'Cartão', 'Boleto'].map(pm => ({ pm, total: entradas.filter(t => t.payment_method === pm).reduce((s, t) => s + Number(t.amount), 0) }));
 
   return (
     <Shell role={role} active="/relatorio-diario">
@@ -53,3 +53,4 @@ export default function RelatorioDiarioPage() {
     </Shell>
   );
 }
+
