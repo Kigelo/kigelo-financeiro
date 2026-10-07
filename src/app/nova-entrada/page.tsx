@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { apiFetch, formatMoney } from '@/lib/api';
 import { Shell } from '@/components/ui';
 
-const PM = ['Dinheiro', 'PIX', 'Débito', 'Crédito'];
+const PM = ['Dinheiro', 'PIX', 'Débito', 'Crédito', 'Boleto'];
 const OPERATORS = ['Stone', 'Cielo', 'Rede', 'PagSeguro', 'Mercado Pago', 'Outra'];
 
 export default function NovaEntradaPage() {
@@ -22,6 +22,7 @@ export default function NovaEntradaPage() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<number | null>(null);
+  const [docWarning, setDocWarning] = useState('');
 
   function openConfirm(e: React.FormEvent) {
     e.preventDefault();
@@ -52,7 +53,11 @@ export default function NovaEntradaPage() {
         const form = new FormData();
         form.append('file', file);
         form.append('transaction_id', String(res.id));
-        await fetch('/api/documents', { method: 'POST', body: form, credentials: 'include' });
+        const docRes = await fetch('/api/documents', { method: 'POST', body: form, credentials: 'include' });
+        if (!docRes.ok) {
+          const d = await docRes.json().catch(() => ({}));
+          setDocWarning(d.error || 'O lançamento foi salvo, mas o comprovante não pôde ser enviado.');
+        }
       }
       setConfirming(false);
       setSuccess(res.id);
@@ -71,6 +76,7 @@ export default function NovaEntradaPage() {
           <div style={{ fontSize: 40 }}>✓</div>
           <h2>Entrada registrada com sucesso!</h2>
           <p>Lançamento #{String(success).padStart(6, '0')}</p>
+          {docWarning && <p style={{ background: '#fdecea', border: '1px solid #f5c6c0', color: '#c62828', padding: 10, borderRadius: 8, fontSize: 13 }}>{docWarning}</p>}
           <button onClick={() => router.push('/dashboard')} style={btn()}>Voltar ao início</button>
         </div>
       </Shell>
@@ -85,7 +91,7 @@ export default function NovaEntradaPage() {
         <Field label="Descrição"><input value={description} onChange={e => setDescription(e.target.value)} placeholder="Ex: Venda balcão" style={input()} /></Field>
         <Field label="Valor"><input value={amount} onChange={e => setAmount(e.target.value)} placeholder="R$ 0,00" style={input()} /></Field>
         <Field label="Forma de pagamento">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(70px,1fr))', gap: 8 }}>
             {PM.map(p => (
               <button type="button" key={p} onClick={() => setPm(p)}
                       style={{ padding: '10px 4px', borderRadius: 10, border: `2px solid ${pm === p ? '#d81b7a' : '#e8ddd2'}`, background: pm === p ? '#fdeaf3' : '#fff', color: pm === p ? '#d81b7a' : '#22303f', fontWeight: 700, fontSize: 13 }}>
@@ -145,4 +151,5 @@ function btn(bg = '#d81b7a', color = '#fff', ghost = false): React.CSSProperties
 }
 function overlay(): React.CSSProperties { return { position: 'fixed', inset: 0, background: 'rgba(20,20,20,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }; }
 function modal(): React.CSSProperties { return { background: '#fff', borderRadius: 16, padding: 20, maxWidth: 420, width: '100%' }; }
+
 
