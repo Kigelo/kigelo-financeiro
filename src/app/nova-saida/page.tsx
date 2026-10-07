@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { apiFetch, formatMoney } from '@/lib/api';
 import { Shell, Field, input, btn, overlay, modal } from '@/components/ui';
 
-const PM = ['Dinheiro', 'PIX', 'Débito', 'Crédito', 'Boleto'];
+const PM = ['Dinheiro', 'PIX', 'Cartão', 'Boleto'];
 const OPERATORS = ['Stone', 'Cielo', 'Rede', 'PagSeguro', 'Mercado Pago', 'Outra'];
 
 export default function NovaSaidaPage() {
@@ -51,8 +51,8 @@ export default function NovaSaidaPage() {
         method: 'POST',
         body: JSON.stringify({
           type: 'SAIDA', amount: val, payment_method: pm, category,
-          operator: pm === 'Débito' || pm === 'Crédito' ? operator : null,
-          installments: pm === 'Crédito' ? parseInt(installments) : null,
+          operator: pm === 'Cartão' ? operator : null,
+          installments: pm === 'Cartão' ? parseInt(installments) : null,
           description, observation, transaction_date: today,
         }),
       });
@@ -112,12 +112,12 @@ export default function NovaSaidaPage() {
               ))}
             </div>
           </Field>
-          {(pm === 'Débito' || pm === 'Crédito') && (
+          {(pm === 'Cartão') && (
             <Field label="Maquininha / Operadora">
               <select value={operator} onChange={e => setOperator(e.target.value)} style={input()}>{OPERATORS.map(o => <option key={o}>{o}</option>)}</select>
             </Field>
           )}
-          {pm === 'Crédito' && (
+          {pm === 'Cartão' && (
             <Field label="Número de parcelas">
               <select value={installments} onChange={e => setInstallments(e.target.value)} style={input()}>{Array.from({ length: 12 }, (_, i) => `${i + 1}x`).map(p => <option key={p}>{p}</option>)}</select>
             </Field>
