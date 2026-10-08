@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch, formatMoney } from '@/lib/api';
+import { apiFetch, formatMoney, todayBR } from '@/lib/api';
 import { Shell, Card, Kpi, COLORS, btn } from '@/components/ui';
 
 type Tx = { type: string; amount: number; status: string; transaction_date: string; payment_method: string; user_name: string };
@@ -9,7 +9,7 @@ type Tx = { type: string; amount: number; status: string; transaction_date: stri
 export default function RelatorioDiarioPage() {
   const router = useRouter();
   const [role, setRole] = useState<'ADMIN' | 'FUNC' | null>(null);
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(todayBR());
   const [items, setItems] = useState<Tx[]>([]);
 
   useEffect(() => { apiFetch('/api/me').then(u => setRole(u.role)).catch(() => router.push('/login')); }, [router]);
@@ -53,4 +53,5 @@ export default function RelatorioDiarioPage() {
     </Shell>
   );
 }
+
 
