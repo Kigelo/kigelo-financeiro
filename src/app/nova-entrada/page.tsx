@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch, formatMoney } from '@/lib/api';
+import { apiFetch, formatMoney, todayBR } from '@/lib/api';
 import { Shell } from '@/components/ui';
 
 const PM = ['Dinheiro', 'PIX', 'Cartão', 'Boleto'];
@@ -11,7 +11,7 @@ export default function NovaEntradaPage() {
   const router = useRouter();
   const [role, setRole] = useState<'ADMIN' | 'FUNC' | null>(null);
   useEffect(() => { apiFetch('/api/me').then(u => setRole(u.role)).catch(() => router.push('/login')); }, [router]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayBR();
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [pm, setPm] = useState('');
