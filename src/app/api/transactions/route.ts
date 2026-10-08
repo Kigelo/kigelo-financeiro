@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query, pool } from '@/lib/db';
 import { requireRole, AuthError } from '@/lib/auth';
+import { todayBR } from '@/lib/api';
 
 const VALID_TYPES = ['ENTRADA', 'SAIDA', 'CUSTO'];
 const VALID_PM = ['Dinheiro', 'PIX', 'Cartão', 'Boleto'];
@@ -18,7 +19,10 @@ export async function POST(req: NextRequest) {
     if (!VALID_PM.includes(body.payment_method)) return bad('Forma de pagamento inválida.');
 
     // Funcionário só pode lançar com a data de hoje (validado no backend).
-    const today = new Date().toISOString().slice(0, 10);
+    // "Hoje" sempre no horário de Brasília — o servidor roda em UTC, e usar
+    // UTC aqui bloquearia (ou liberaria) lançamentos errados entre ~21h e
+    // 23h59 no horário do Brasil.
+    const today = todayBR();
     if (user.role !== 'ADMIN' && body.transaction_date !== today) {
       return bad('Funcionários só podem lançar com a data de hoje.');
     }
