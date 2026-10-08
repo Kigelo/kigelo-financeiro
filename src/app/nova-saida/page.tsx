@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch, formatMoney } from '@/lib/api';
+import { apiFetch, formatMoney, todayBR } from '@/lib/api';
 import { Shell, Field, input, btn, overlay, modal } from '@/components/ui';
 
 const PM = ['Dinheiro', 'PIX', 'Cartão', 'Boleto'];
@@ -9,7 +9,7 @@ const OPERATORS = ['Stone', 'Cielo', 'Rede', 'PagSeguro', 'Mercado Pago', 'Outra
 
 export default function NovaSaidaPage() {
   const router = useRouter();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayBR();
   const [role, setRole] = useState<'ADMIN' | 'FUNC' | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [category, setCategory] = useState('');
