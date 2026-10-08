@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch, formatMoney, formatDate } from '@/lib/api';
+import { apiFetch, formatMoney, formatDate, todayBR } from '@/lib/api';
 import { Shell, Kpi, Card, COLORS } from '@/components/ui';
 
 type Me = { id: number; name: string; role: 'ADMIN' | 'FUNC' };
-type Tx = { id: number; type: string; amount: number; status: string; created_at: string; payment_method: string; description: string; user_name: string };
+type Tx = { id: number; type: string; amount: number; status: string; created_at: string; transaction_date: string; payment_method: string; description: string; user_name: string };
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -30,14 +30,15 @@ export default function DashboardPage() {
 
   if (loading || !me) return <div style={{ padding: 24 }}>Carregando…</div>;
 
-  const today = new Date().toISOString().slice(0, 10);
-  const isToday = (d: string) => d.slice(0, 10) === today;
-  const sum = (type: string) => items.filter(t => t.type === type && t.status === 'ATIVO' && isToday(t.created_at)).reduce((s, t) => s + Number(t.amount), 0);
+  // Compara pela data do lançamento (transaction_date), não pelo instante de
+  // criação (created_at) — e sempre no horário de Brasília, nunca em UTC.
+  const today = todayBR();
+  const sum = (type: string) => items.filter(t => t.type === type && t.status === 'ATIVO' && t.transaction_date.slice(0, 10) === today).reduce((s, t) => s + Number(t.amount), 0);
   const inD = sum('ENTRADA'), outD = sum('SAIDA'), costD = sum('CUSTO');
 
   return (
     <Shell role={me.role} active="/dashboard">
-      <h1>Olá, {me.name.split(' ')[0]} — {formatDate(new Date())}</h1>
+      <h1>Olá, {me.name.split(' ')[0]} — {formatDate(today)}</h1>
 
       {me.role === 'FUNC' && (
         <>
